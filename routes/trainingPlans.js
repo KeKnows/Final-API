@@ -1,88 +1,47 @@
-const express = require('express');
-const router = express.Router();
-
+const router = require('express').Router();
 const { TrainingPlan } = require('../models');
-const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
+const auth = require('../middleware/auth');
 
+// CREATE
+router.post('/', auth, async (req, res) => {
+  if (req.user.role !== 'coach') {
+    return res.status(403).json({ error: 'Coach only' });
+  }
 
-// ======================
-// GET ALL PLANS (everyone logged in)
-// ======================
-router.get('/', authenticateToken, async (req, res) => {
-  const plans = await TrainingPlan.findAll();
-  res.json(plans);
+  const plan = await TrainingPlan.create({
+    ...req.body,
+    coachId: req.user.id
+  });
+
+  res.status(201).json(plan);
 });
 
+// UPDATE (FIXED)
+router.put('/:id', auth, async (req, res) => {
+  const plan = await TrainingPlan.findByPk(req.params.id);
 
-// ======================
-// CREATE PLAN (COACH ONLY)
-// ======================
-router.post(
-  '/',
-  authenticateToken,
-  authorizeRoles('coach'),
-  async (req, res) => {
-    try {
-      const plan = await TrainingPlan.create({
-        ...req.body,
-        coachId: req.user.id
-      });
+  if (!plan) return res.status(404).json({ error: 'Not found' });
 
-      res.status(201).json(plan);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+  if (plan.coachId !== req.user.id) {
+    return res.status(403).json({ error: 'Unauthorized' });
   }
-);
 
+  await plan.update(req.body);
+  res.json(plan);
+});
 
-// ======================
-// UPDATE PLAN (COACH ONLY)
-// ======================
-router.put(
-  '/:id',
-  authenticateToken,
-  authorizeRoles('coach'),
-  async (req, res) => {
-    try {
-      const plan = await TrainingPlan.findByPk(req.params.id);
+// DELETE (FIXED)
+router.delete('/:id', auth, async (req, res) => {
+  const plan = await TrainingPlan.findByPk(req.params.id);
 
-      if (!plan) {
-        return res.status(404).json({ message: "Plan not found" });
-      }
+  if (!plan) return res.status(404).json({ error: 'Not found' });
 
-      await plan.update(req.body);
-
-      res.json(plan);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+  if (plan.coachId !== req.user.id) {
+    return res.status(403).json({ error: 'Unauthorized' });
   }
-);
 
-
-// ======================
-// DELETE PLAN (COACH ONLY)
-// ======================
-router.delete(
-  '/:id',
-  authenticateToken,
-  authorizeRoles('coach'),
-  async (req, res) => {
-    try {
-      const plan = await TrainingPlan.findByPk(req.params.id);
-
-      if (!plan) {
-        return res.status(404).json({ message: "Plan not found" });
-      }
-
-      await plan.destroy();
-
-      res.json({ message: "Plan deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-);
+  await plan.destroy();
+  res.json({ message: 'Deleted' });
+});
 
 module.exports = router;
