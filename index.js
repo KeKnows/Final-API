@@ -8,44 +8,29 @@ const performanceRoutes = require('./routes/performanceRecords');
 
 const app = express();
 
-// ======================
-// MIDDLEWARE (FIXED ORDER)
-// ======================
-app.use(express.json()); // ✅ MUST COME FIRST
+// ✅ MUST BE FIRST
+app.use(express.json());
 
-// Logging middleware
+// Logging
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
 
-// ======================
-// ROUTES (AFTER middleware)
-// ======================
+// Routes
 app.use('/auth', authRoutes);
-app.use('/records', performanceRoutes);
-app.use('/plans', trainingPlanRoutes);
 app.use('/workouts', workoutRoutes);
+app.use('/plans', trainingPlanRoutes);
+app.use('/records', performanceRoutes);
 
-// ======================
-// TEST ROUTE
-// ======================
+// Health check
 app.get('/', (req, res) => {
-  res.json({ message: 'Athlete Training API is running 🚀' });
+  res.json({ message: 'API running' });
 });
 
-// ======================
-// START SERVER
-// ======================
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
-
-  try {
-    await sequelize.authenticate();
-    console.log('Database connected successfully');
-  } catch (error) {
-    console.error('Database connection failed:', error.message);
-  }
+  console.log(`Server running on ${PORT}`);
+  await sequelize.authenticate();
 });
