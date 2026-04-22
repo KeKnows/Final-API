@@ -1,42 +1,19 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = "supersecretkey";
+const SECRET = 'supersecretkey'; // (env later if needed)
 
-// ======================
-// VERIFY TOKEN
-// ======================
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
+module.exports = (req, res, next) => {
+  const header = req.headers.authorization;
 
-  const token = authHeader && authHeader.split(' ')[1];
+  if (!header) return res.status(401).json({ error: 'No token' });
 
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
+  const token = header.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, SECRET);
+    req.user = decoded;
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
   }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
-
-    req.user = user;
-    next();
-  });
-}
-
-// ======================
-// ROLE CHECK
-// ======================
-function authorizeRoles(...roles) {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    next();
-  };
-}
-
-module.exports = {
-  authenticateToken,
-  authorizeRoles
 };
