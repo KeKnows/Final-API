@@ -1,36 +1,37 @@
-console.log("INDEX FILE STARTED");
 const express = require('express');
 const { sequelize } = require('./models');
+
 const authRoutes = require('./routes/auth');
 const workoutRoutes = require('./routes/workouts');
-const app = express();
 const trainingPlanRoutes = require('./routes/trainingPlans');
 const performanceRoutes = require('./routes/performanceRecords');
 
-app.use('/records', performanceRoutes);
-app.use('/plans', trainingPlanRoutes);
-app.use('/workouts', workoutRoutes);
-
+const app = express();
 
 // ======================
-// MIDDLEWARE
+// MIDDLEWARE (FIXED ORDER)
 // ======================
-app.use(express.json());
-app.use('/auth', authRoutes);
+app.use(express.json()); // ✅ MUST COME FIRST
 
-// Basic logging middleware
+// Logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
 
 // ======================
+// ROUTES (AFTER middleware)
+// ======================
+app.use('/auth', authRoutes);
+app.use('/records', performanceRoutes);
+app.use('/plans', trainingPlanRoutes);
+app.use('/workouts', workoutRoutes);
+
+// ======================
 // TEST ROUTE
 // ======================
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Athlete Training API is running 🚀'
-  });
+  res.json({ message: 'Athlete Training API is running 🚀' });
 });
 
 // ======================
