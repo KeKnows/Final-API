@@ -6,8 +6,8 @@ async function setupDatabase() {
 
     await sequelize.sync({ force: true });
 
-    console.log('✅ Database synced successfully!');
-    console.log('📦 All tables created and relationships established.');
+    console.log(' Database synced successfully!');
+    console.log(' All tables created and relationships established.');
 
     process.exit(0);
   } catch (error) {
