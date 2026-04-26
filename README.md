@@ -1,183 +1,218 @@
-# Athlete Training REST API
+🏋️ Athlete Training & Performance API
 
-## Overview
+A full-stack REST API built with Node.js and Express that allows athletes and coaches to manage workouts, training plans, and performance data. This project demonstrates secure backend architecture, authentication, role-based authorization, and production deployment.
 
-This project is a RESTful API designed to help athletes and coaches track workouts, training plans, and performance data. The system supports secure authentication, role-based access control, and user-specific data management.
+🚀 Live API
 
-This API was developed as a final project and enhanced based on code review feedback to meet MVP requirements and improve security, reliability, and structure.
-
----
-
-## Live API
-
-Base URL:
+Production URL (Render):
 https://your-api-name.onrender.com
 
-Health Check:
-GET /
+📬 Postman Documentation
 
----
+Public Collection:
+https://your-postman-link
 
-## Features
+📌 Project Overview
 
-* JWT-based authentication
-* Role-based access control (Athlete / Coach)
-* Secure user registration (prevents role escalation)
-* User-scoped data (no cross-user access)
-* Ownership enforcement for coaches
-* CRUD operations for:
+This API allows:
 
-  * Workouts
-  * Training Plans
-  * Performance Records
-* Middleware-based request handling
-* Basic unit testing with Jest and Supertest
+Athletes to track workouts and performance records
+Coaches to create and manage training plans
+Secure user authentication and role-based access
+Full CRUD operations across multiple resources
 
----
+This project was built as a capstone backend system to demonstrate real-world API development practices.
 
-## Tech Stack
+🧱 Tech Stack
+Node.js
+Express.js
+Sequelize ORM
+SQLite (development) / PostgreSQL (production)
+JSON Web Tokens (JWT)
+bcrypt (password hashing)
+express-validator (input validation)
+Jest & Supertest (testing)
+🔐 Authentication & Authorization
+Authentication
+Users register and log in
+Passwords are hashed using bcrypt
+JWT tokens are issued on login
+Protected routes require a valid token
+Authorization (RBAC)
+Role	Permissions
+Athlete	Manage own workouts and performance records
+Coach	Create and manage training plans
+⚙️ Installation & Setup
+Clone repository:
+git clone https://github.com/YOUR_USERNAME/final-api.git
+cd final-api
+Install dependencies:
+npm install
+Create .env file:
+PORT=3000
+JWT_SECRET=your_secret_key
+Setup database:
+npm run setup
+npm run seed
+Start server:
+npm start
+🌐 Base URLs
 
-* Node.js
-* Express.js
-* Sequelize ORM
-* SQLite (or PostgreSQL if upgraded)
-* JSON Web Tokens (JWT)
-* bcrypt
-* Jest & Supertest
+Local:
 
----
+http://localhost:3000
 
-## Authentication
+Production:
 
-### Register
+https://your-api-name.onrender.com
+🔑 Authentication Usage
+
+Include JWT token in headers:
+
+Authorization: Bearer YOUR_TOKEN
+📊 API ENDPOINTS
+🔐 Auth Routes
+Register
 
 POST /auth/register
 
-Request Body:
+Request:
+
 {
-"username": "testuser",
-"password": "password123"
+  "username": "user1",
+  "email": "user@email.com",
+  "password": "123456"
 }
-
-Note:
-All users are registered as "athlete" by default to prevent privilege escalation.
-
----
-
-### Login
+Login
 
 POST /auth/login
 
-Response:
+Request:
+
 {
-"token": "your_jwt_token"
+  "username": "user1",
+  "password": "123456"
 }
 
----
+Response:
 
-### Using the Token
+{
+  "token": "jwt_token_here"
+}
+🏋️ Workouts
+Create Workout
 
-Include this header in all protected routes:
+POST /workouts
 
-Authorization: Bearer YOUR_TOKEN
+{
+  "type": "Running",
+  "duration": 30
+}
+Get All Workouts
 
----
+GET /workouts
 
-## API Endpoints
+Get One Workout
 
-### Workouts
+GET /workouts/
 
-* GET /workouts
-  Returns only workouts belonging to the authenticated user
+Update Workout
 
-* POST /workouts
-  Creates a workout assigned to the logged-in user
+PUT /workouts/
 
-* DELETE /workouts/:id
-  Only the owner can delete
+Delete Workout
 
----
+DELETE /workouts/
 
-### Training Plans (Coach Only)
+📈 Performance Records
+Create Record
 
-* POST /plans
-  Create a training plan
+POST /performance
 
-* PUT /plans/:id
-  Only the coach who created the plan can update it
+{
+  "metric": "Sprint Time",
+  "value": "10.5s"
+}
+Get Records
 
-* DELETE /plans/:id
-  Only the owner can delete
+GET /performance
 
----
+Update Record
 
-### Performance Records
+PUT /performance/
 
-* GET /records
-  Returns only user-specific records
+Delete Record
 
-* POST /records
-  Creates a performance record tied to the user
+DELETE /performance/
 
----
+📝 Training Plans (Coach Only)
+Create Plan
 
-## Security Improvements (Post Code Review)
+POST /training-plans
 
-The following critical issues were identified and resolved:
+{
+  "title": "Offseason Plan",
+  "description": "Strength + conditioning"
+}
+Get Plans
 
-* Fixed middleware order so JSON request bodies are properly parsed
-* Prevented privilege escalation by removing client-controlled role assignment
-* Enforced ownership checks on training plans
-* Restricted workout and performance data to authenticated users only
-* Prevented userId spoofing in protected routes
+GET /training-plans
 
----
+Update Plan
 
-## Running Locally
+PUT /training-plans/
 
-Install dependencies:
-npm install
+Delete Plan
 
-Start server:
-node index.js
+DELETE /training-plans/
 
----
-
-## Testing
+❗ Error Handling
+Standard Error
+{
+  "error": "Something went wrong"
+}
+Validation Error
+{
+  "errors": [
+    {
+      "msg": "Field is required"
+    }
+  ]
+}
+🧪 Testing
 
 Run tests:
+
 npm test
-
-Includes:
-
-* Authentication endpoint test
-* Basic request validation
-
----
-
-## Postman Documentation
-
-https://documenter.getpostman.com/view/your-link
-
-This collection demonstrates:
-
-* Authentication flow
-* Protected routes with JWT
-* CRUD operations for all resources
-
----
-
-## Deployment
-
-This API is deployed using Render.
-
-Live URL:
-https://Final-API.onrender.com
-
----
-
-## Author
+Test Coverage Includes:
+User registration and login
+JWT authentication
+Protected routes
+Role-based authorization
+Error handling
+☁️ Deployment (Render)
+Push project to GitHub
+Go to Render
+Create new Web Service
+Connect repository
+Add environment variables:
+JWT_SECRET
+DATABASE_URL (if using PostgreSQL)
+Deploy
+📁 Project Structure
+final-api/
+├── models/
+├── routes/
+├── middleware/
+├── database/
+├── tests/
+├── index.js
+├── package.json
+🎯 Future Improvements
+Pagination and filtering
+Refresh tokens
+Email verification
+Advanced analytics
+👨‍💻 Author
 
 Keonne Gladden
-
-Final Project – Athlete Training REST API
