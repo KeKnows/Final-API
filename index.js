@@ -1,36 +1,53 @@
+require('dotenv').config();
+
 const express = require('express');
+const cors = require('cors');
 const { sequelize } = require('./models');
 
 const authRoutes = require('./routes/auth');
 const workoutRoutes = require('./routes/workouts');
-const trainingPlanRoutes = require('./routes/trainingPlans');
 const performanceRoutes = require('./routes/performanceRecords');
+const trainingPlanRoutes = require('./routes/trainingPlans');
+
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ✅ MUST BE FIRST
-app.use(express.json());
 
-// Logging
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
+app.use(cors());
+app.use(express.json()); // MUST come before routes
+
+
+app.get('/', (req, res) => {
+  res.json({ message: 'API is running' });
 });
 
-// Routes
+
 app.use('/auth', authRoutes);
 app.use('/workouts', workoutRoutes);
-app.use('/plans', trainingPlanRoutes);
-app.use('/records', performanceRoutes);
+app.use('/performance', performanceRoutes);
+app.use('/training-plans', trainingPlanRoutes);
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({ message: 'API running' });
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
 });
 
-const PORT = 3000;
 
-app.listen(PORT, async () => {
-  console.log(`Server running on ${PORT}`);
-  await sequelize.authenticate();
-});
+app.use(errorHandler);
+
+
+sequelize.sync()
+  .then(() => {
+    console.log('Database connected');
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Database connection failed:', err);
+  });
+
+module.exports = app;
